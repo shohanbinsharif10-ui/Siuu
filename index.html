@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101b35">
+<title>Admission Syllabus Tracker</title>
+<style>
+:root{--bg:#0b1224;--panel:#131f38;--panel2:#1a2948;--text:#f5f7ff;--muted:#aab6d0;--green:#27c786;--blue:#60a5fa;--line:#2c3b5e}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0b1224,#111d36);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans Bengali","Hind Siliguri",sans-serif}
+header{padding:24px 16px 18px;text-align:center;background:radial-gradient(ellipse at top,#263d70,transparent 70%)}
+h1{font-size:clamp(24px,6vw,34px);margin:0 0 6px}header p{margin:0;color:var(--muted)}
+main{max-width:850px;margin:auto;padding:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 24px #0002}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
+.stat{background:var(--panel2);border-radius:12px;padding:12px 6px}.stat b{display:block;font-size:25px}.stat span{font-size:12px;color:var(--muted)}
+.progress{height:12px;background:#263552;border-radius:99px;overflow:hidden;margin:12px 0 6px}.bar{height:100%;width:0;background:linear-gradient(90deg,#19b77c,#7be0ae);transition:width .2s}
+.subjects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.subject{background:var(--panel2);padding:12px;border-radius:12px}.subject strong{display:block}.subject small{color:var(--muted)}
+.tabs{display:flex;gap:8px;overflow:auto;padding:4px 0 10px}.tab{white-space:nowrap;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:999px;padding:9px 13px;font-size:14px}.tab.active{background:#245b50;border-color:#27c786}
+.paper{border:1px solid var(--line);border-radius:14px;margin:12px 0;overflow:hidden}.paperhead{padding:13px;background:#1a2a49;display:flex;justify-content:space-between;gap:10px;align-items:center}.paperhead small{color:var(--muted)}
+.chapter{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-top:1px solid var(--line);cursor:pointer}.chapter input{width:19px;height:19px;accent-color:#27c786;flex-shrink:0;margin-top:2px}.chapter.done .name{text-decoration:line-through;color:#91a2bc}.num{color:#8fa5c9;min-width:24px}
+button{border:0;border-radius:10px;padding:10px 13px;font-weight:650;cursor:pointer;background:#2563eb;color:white}.secondary{background:#263754;color:var(--text)}.danger{background:#7f2937}.actions{display:flex;flex-wrap:wrap;gap:8px}.hint{font-size:13px;color:var(--muted);line-height:1.55}.status{font-size:12px;color:#8fe0b9;margin-top:8px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
+@media(max-width:520px){.summary{grid-template-columns:repeat(3,1fr)}.stat b{font-size:21px}.subjects{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header><p style="font-size:18px;font-weight:700;color:#f5f7ff;margin:0 0 8px">Dear Shohan ❤️</p><h1>🎓 Admission Syllabus Tracker</h1><p>HSC Science • ICT বাদে • অধ্যায়ভিত্তিক অগ্রগতি</p></header>
+<main>
+<section class="card">
+ <div class="summary">
+  <div class="stat"><b id="percent">0%</b><span>সিলেবাস শেষ</span></div>
+  <div class="stat"><b id="doneCount">0</b><span>শেষ অধ্যায়</span></div>
+  <div class="stat"><b id="leftCount">75</b><span>বাকি অধ্যায়</span></div>
+ </div>
+ <div class="progress"><div class="bar" id="totalBar"></div></div>
+ <div class="hint" id="summaryText">শুরু করো—প্রতিটি অধ্যায় শেষ হলে টিক দাও।</div>
+</section>
+<section class="card">
+ <h2 style="margin:0 0 12px;font-size:18px">বিষয়ভিত্তিক অগ্রগতি</h2>
+ <div class="subjects" id="subjectSummary"></div>
+</section>
+<section class="card">
+ <h2 style="margin:0 0 10px;font-size:18px">অধ্যায় নির্বাচন</h2>
+ <div class="tabs" id="tabs"></div>
+ <div id="chapterLists"></div>
+</section>
+<section class="card">
+ <h2 style="margin:0 0 8px;font-size:18px">ডেটা ব্যাকআপ</h2>
+ <p class="hint">এই অ্যাপটি একই ব্রাউজারের Local Storage-এ স্বয়ংক্রিয়ভাবে অগ্রগতি সেভ করে। ব্রাউজারের ডেটা মুছে ফেললে অগ্রগতি হারাতে পারে। তাই মাঝে মাঝে ব্যাকআপ ডাউনলোড করে রাখো।</p>
+ <div class="actions">
+  <button id="exportBtn">ব্যাকআপ ডাউনলোড</button>
+  <button class="secondary" id="importBtn">ব্যাকআপ ফিরিয়ে আনো</button>
+  <button class="danger" id="resetBtn">সব রিসেট</button>
+  <input type="file" id="fileInput" accept="application/json" hidden>
+ </div>
+ <div class="status" id="saveStatus">✓ এই ডিভাইসের ব্রাউজারে অটো-সেভ চালু</div>
+</section>
+<footer>তোমার ভর্তি প্রস্তুতির জন্য শুভকামনা ❤️</footer>
+</main>
+<script>
+const data = [
+ {key:"phy1",subject:"পদার্থবিজ্ঞান",paper:"১ম পত্র",chapters:["ভৌতজগৎ ও পরিমাপ","ভেক্টর","গতিবিদ্যা","নিউটনীয় বলবিদ্যা","কাজ, শক্তি ও ক্ষমতা","মহাকর্ষ ও অভিকর্ষ","পদার্থের গাঠনিক ধর্ম","পর্যাবৃত্ত গতি","তরঙ্গ","আদর্শ গ্যাস ও গ্যাসের গতিতত্ত্ব"]},
+ {key:"phy2",subject:"পদার্থবিজ্ঞান",paper:"২য় পত্র",chapters:["তাপগতিবিদ্যা","স্থির তড়িৎ","চল তড়িৎ","তড়িৎ প্রবাহের চৌম্বক ক্রিয়া ও চুম্বকত্ব","তড়িৎচৌম্বকীয় আবেশ ও পরিবর্তী প্রবাহ","জ্যামিতিক আলোকবিজ্ঞান","ভৌত আলোকবিজ্ঞান","আধুনিক পদার্থবিজ্ঞানের সূচনা","পরমাণুর মডেল ও নিউক্লীয় পদার্থবিজ্ঞান","সেমিকন্ডাক্টর ও ইলেকট্রনিক্স","জ্যোতির্বিজ্ঞান"]},
+ {key:"chem1",subject:"রসায়ন",paper:"১ম পত্র",chapters:["ল্যাবরেটরির নিরাপদ ব্যবহার","গুণগত রসায়ন","মৌলের পর্যায়বৃত্ত ধর্ম ও রাসায়নিক বন্ধন","রাসায়নিক পরিবর্তন","কর্মমুখী রসায়ন"]},
+ {key:"chem2",subject:"রসায়ন",paper:"২য় পত্র",chapters:["পরিবেশ রসায়ন","জৈব রসায়ন","পরিমাণগত রসায়ন","তড়িৎ রসায়ন","অর্থনৈতিক রসায়ন"]},
+ {key:"bio1",subject:"জীববিজ্ঞান",paper:"১ম পত্র (উদ্ভিদবিজ্ঞান)",chapters:["কোষ ও এর গঠন","কোষ বিভাজন","কোষ রসায়ন","অণুজীব","শৈবাল ও ছত্রাক","ব্রায়োফাইটা ও টেরিডোফাইটা","নগ্নবীজী ও আবৃতবীজী উদ্ভিদ","টিস্যু ও টিস্যুতন্ত্র","উদ্ভিদ শারীরতত্ত্ব","উদ্ভিদ প্রজনন","জীবপ্রযুক্তি","জীবের পরিবেশ, বিস্তার ও সংরক্ষণ"]},
+ {key:"bio2",subject:"জীববিজ্ঞান",paper:"২য় পত্র (প্রাণিবিজ্ঞান)",chapters:["প্রাণীর বিভিন্নতা ও শ্রেণিবিন্যাস","প্রাণীর পরিচিতি","পরিপাক ও শোষণ","রক্ত ও সংবহন","শ্বসন ও শ্বাসক্রিয়া","বর্জ্য ও নিষ্কাশন","চলন ও অঙ্গচালনা","সমন্বয় ও নিয়ন্ত্রণ","মানব জীবনের ধারাবাহিকতা","মানবদেহের প্রতিরক্ষা","জিনতত্ত্ব ও বিবর্তন","প্রাণীর আচরণ"]},
+ {key:"math1",subject:"উচ্চতর গণিত",paper:"১ম পত্র",chapters:["ম্যাট্রিক্স ও নির্ণায়ক","ভেক্টর","সরলরেখা","বৃত্ত","বিন্যাস ও সমাবেশ","ত্রিকোণমিতিক অনুপাত","সংযুক্ত কোণের ত্রিকোণমিতিক অনুপাত","ফাংশন ও ফাংশনের লেখচিত্র","অন্তরীকরণ","যোগজীকরণ"]},
+ {key:"math2",subject:"উচ্চতর গণিত",paper:"২য় পত্র",chapters:["বাস্তব সংখ্যা ও অসমতা","যোগাশ্রয়ী প্রোগ্রাম","জটিল সংখ্যা","বহুপদী ও বহুপদী সমীকরণ","দ্বিপদী বিস্তৃতি","কণিক","বিপরীত ত্রিকোণমিতিক ফাংশন ও ত্রিকোণমিতিক সমীকরণ","স্থিতিবিদ্যা","সমতলে বস্তুকণার গতি","বিস্তার পরিমাপ ও সম্ভাবনা"]}
+];
+const total=data.reduce((n,p)=>n+p.chapters.length,0);
+const STORAGE="hscScienceAdmissionTracker_v1";
+let completed=new Set();
+let active="all";
+try{completed=new Set(JSON.parse(localStorage.getItem(STORAGE)||"[]"))}catch(e){}
+const $=id=>document.getElementById(id);
+function save(){localStorage.setItem(STORAGE,JSON.stringify([...completed]));$("saveStatus").textContent="✓ অটো-সেভ হয়েছে — "+new Date().toLocaleTimeString("bn-BD",{hour:"2-digit",minute:"2-digit"});renderSummary()}
+function renderSummary(){
+ const n=completed.size,p=Math.round(n/total*100);
+ $("percent").textContent=p+"%";$("doneCount").textContent=n;$("leftCount").textContent=total-n;
+ $("totalBar").style.width=p+"%";$("summaryText").textContent=p===100?"অভিনন্দন! সব অধ্যায় শেষ! 🎉":`আর ${total-n}টি অধ্যায় বাকি। নিয়মিত এগিয়ে চলো!`;
+ const groups=[["পদার্থবিজ্ঞান",["phy1","phy2"]],["রসায়ন",["chem1","chem2"]],["জীববিজ্ঞান",["bio1","bio2"]],["উচ্চতর গণিত",["math1","math2"]]];
+ $("subjectSummary").innerHTML=groups.map(([name,keys])=>{let all=data.filter(x=>keys.includes(x.key)).flatMap(x=>x.chapters.map((_,i)=>x.key+"-"+i));let c=all.filter(x=>completed.has(x)).length;return `<div class="subject"><strong>${name}</strong><b>${c}/${all.length}</b><div class="progress"><div class="bar" style="width:${100*c/all.length}%"></div></div><small>${Math.round(100*c/all.length)}% সম্পন্ন</small></div>`}).join("");
+}
+function render(){
+ const groups=[["all","সব পত্র"],...data.map(x=>[x.key,x.subject+" · "+x.paper])];
+ $("tabs").innerHTML=groups.map(([key,label])=>`<button class="tab ${active===key?"active":""}" data-key="${key}">${label}</button>`).join("");
+ document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{active=b.dataset.key;render()});
+ const shown=active==="all"?data:data.filter(x=>x.key===active);
+ $("chapterLists").innerHTML=shown.map(p=>{let c=p.chapters.filter((_,i)=>completed.has(p.key+"-"+i)).length;return `<div class="paper"><div class="paperhead"><div><b>${p.subject}</b><br><small>${p.paper}</small></div><b>${c}/${p.chapters.length}</b></div>${p.chapters.map((ch,i)=>{let id=p.key+"-"+i,yes=completed.has(id);return `<label class="chapter ${yes?"done":""}"><input type="checkbox" data-id="${id}" ${yes?"checked":""}><span class="num">${i+1}.</span><span class="name">${ch}</span></label>`}).join("")}</div>`}).join("");
+ document.querySelectorAll('input[type="checkbox"][data-id]').forEach(cb=>cb.onchange=()=>{cb.checked?completed.add(cb.dataset.id):completed.delete(cb.dataset.id);save();render()});
+ renderSummary();
+}
+$("exportBtn").onclick=()=>{let blob=new Blob([JSON.stringify({version:1,completed:[...completed],exportedAt:new Date().toISOString()},null,2)],{type:"application/json"});let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="admission-syllabus-backup.json";a.click();URL.revokeObjectURL(a.href)};
+$("importBtn").onclick=()=>$("fileInput").click();
+$("fileInput").onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let obj=JSON.parse(await f.text());if(!Array.isArray(obj.completed))throw Error();completed=new Set(obj.completed.filter(x=>data.some(p=>p.chapters.some((_,i)=>p.key+"-"+i===x))));save();render();alert("ব্যাকআপ সফলভাবে ফিরিয়ে আনা হয়েছে।")}catch(err){alert("ফাইলটি সঠিক ব্যাকআপ নয়।")}e.target.value=""};
+$("resetBtn").onclick=()=>{if(confirm("সব অধ্যায়ের টিক মুছে ফেলবে? আগে ব্যাকআপ নিতে চাইলে Cancel চাপো।")){completed.clear();save();render()}};
+render();
+</script>
+</body>
+</html>
